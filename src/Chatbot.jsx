@@ -88,6 +88,7 @@ function Chatbot({ folderName }) {
     }
 
     const userMessage = {
+      id: Date.now(),
       role: 'user',
       content: inputMessage.trim(),
       timestamp: new Date().toISOString()
@@ -110,6 +111,21 @@ function Chatbot({ folderName }) {
         content: msg.content
       }))
 
+      // Create assistant message placeholder for streaming
+      const assistantMessageId = Date.now()
+      const assistantMessage = {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        sources: [],
+        sourceChunks: {},
+        sourceAuthors: {},
+        timestamp: new Date().toISOString()
+      }
+
+      const messagesWithPlaceholder = [...updatedMessages, assistantMessage]
+      setMessages(messagesWithPlaceholder)
+
       const response = await fetch('http://localhost:8000/chat', {
         method: 'POST',
         headers: {
@@ -126,22 +142,73 @@ function Chatbot({ folderName }) {
         throw new Error('Failed to get response')
       }
 
-      const data = await response.json()
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let fullResponse = ''
+      let sources = []
+      let sourceChunks = {}
+      let sourceAuthors = {}
 
-      if (data.error) {
-        throw new Error(data.error)
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (!line.trim()) continue
+
+          try {
+            const data = JSON.parse(line)
+            
+            if (data.type === 'metadata') {
+              sources = data.sources || []
+              sourceAuthors = data.source_authors || {}
+            } else if (data.type === 'chunk') {
+              fullResponse += data.content
+              // Update the message in real-time
+              setMessages(prev => prev.map(msg => 
+                msg.id === assistantMessageId
+                  ? { ...msg, content: fullResponse }
+                  : msg
+              ))
+            } else if (data.type === 'complete') {
+              sources = data.sources || sources
+              sourceChunks = data.source_chunks || sourceChunks
+              // Update message with sources
+              setMessages(prev => prev.map(msg => 
+                msg.id === assistantMessageId
+                  ? { ...msg, sources: sources, sourceChunks: sourceChunks, sourceAuthors: sourceAuthors }
+                  : msg
+              ))
+            } else if (data.type === 'error') {
+              throw new Error(data.error)
+            } else if (data.error) {
+              throw new Error(data.error)
+            }
+          } catch (e) {
+            // Skip invalid JSON lines
+            if (e.message.includes('JSON')) continue
+            throw e
+          }
+        }
       }
 
-      const assistantMessage = {
+      // Finalize the message with all data (sources already updated in complete handler)
+      const finalAssistantMessage = {
+        id: assistantMessageId,
         role: 'assistant',
-        content: data.response,
-        sources: data.sources || [],
-        sourceChunks: data.source_chunks || {},
-        sourceAuthors: data.source_authors || {},
+        content: fullResponse,
+        sources: sources,
+        sourceChunks: sourceChunks,
+        sourceAuthors: sourceAuthors,
         timestamp: new Date().toISOString()
       }
 
-      const finalMessages = [...updatedMessages, assistantMessage]
+      const finalMessages = [...updatedMessages, finalAssistantMessage]
       setMessages(finalMessages)
       updateSessionMessages(currentSessionId, finalMessages)
 
@@ -253,7 +320,7 @@ function Chatbot({ folderName }) {
                 </div>
               ) : (
                 messages.map((message, index) => (
-                  <div key={index} className={`message ${message.role}`}>
+                  <div key={message.id || index} className={`message ${message.role}`}>
                     <div className="message-header">
                       <span className="message-role">
                         {message.role === 'user' ? 'You' : 'Assistant'}

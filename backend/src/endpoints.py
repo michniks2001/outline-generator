@@ -2,9 +2,11 @@
 API endpoint handlers for the FastAPI application.
 """
 from fastapi import File, UploadFile, Form
+from fastapi.responses import StreamingResponse
+import json
 from .models import TextRequest, QuestionsRequest, ChatRequest, FolderRequest
 from .database import Database
-from .chatbot import process_chat_query
+from .chatbot import process_chat_query, process_chat_query_stream
 from .outline import generate_outline
 
 
@@ -108,15 +110,17 @@ def register_routes(app, db, collection, gemini_client, gemini_model):
     def chat(request: ChatRequest):
         """
         Chat endpoint that answers questions using relevant chunks from the folder.
-        Returns response with source citations.
+        Returns streaming response with source citations.
         """
-        result = process_chat_query(
-            collection=collection,
-            message=request.message,
-            folder_name=request.folder_name,
-            conversation_history=request.conversation_history,
-            gemini_client=gemini_client,
-            gemini_model=gemini_model
+        return StreamingResponse(
+            process_chat_query_stream(
+                collection=collection,
+                message=request.message,
+                folder_name=request.folder_name,
+                conversation_history=request.conversation_history,
+                gemini_client=gemini_client,
+                gemini_model=gemini_model
+            ),
+            media_type="text/event-stream"
         )
-        return result
 

@@ -2,15 +2,19 @@
   width: 100%;
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   padding: 2rem;
+  box-sizing: border-box;
 }
 
 .landing-page {
   max-width: 900px;
   width: 100%;
   text-align: center;
+  margin: 0 auto;
+  flex-shrink: 0;
 }
 
 .landing-page h1 {

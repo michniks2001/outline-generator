@@ -8,6 +8,7 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .chatbot-sidebar {
@@ -213,6 +214,7 @@
   padding: 1rem 1.25rem;
   border-radius: 12px;
   animation: fadeIn 0.3s ease;
+  text-align: left;
 }
 
 @keyframes fadeIn {
@@ -227,7 +229,7 @@
 }
 
 .message.user {
-  align-self: flex-end;
+  align-self: flex-start;
   background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
   color: white;
 }
@@ -303,6 +305,7 @@
   line-height: 1.6;
   white-space: pre-wrap;
   word-wrap: break-word;
+  text-align: left;
 }
 
 .typing-indicator {
