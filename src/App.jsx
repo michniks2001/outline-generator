@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import Chatbot from './Chatbot'
 import './App.css'
 
 // Set up the worker for pdfjs
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 function App() {
+  const [activeTab, setActiveTab] = useState('upload') // 'upload' or 'chat'
   const [isProcessed, setIsProcessed] = useState(false)
   const [processingMessage, setProcessingMessage] = useState('')
   const [fileName, setFileName] = useState('')
@@ -201,10 +203,29 @@ function App() {
   return (
     <div className="app-container">
       <div className="landing-page">
-        <h1>PDF Text Extractor</h1>
-        <p className="subtitle">Upload a PDF file to extract its text content</p>
+        <h1>PDF Text Extractor & Chatbot</h1>
+        <p className="subtitle">Upload PDFs, generate outlines, and chat with your documents</p>
         
-        <div className="upload-section">
+        <div className="tabs">
+          <button
+            className={`tab-button ${activeTab === 'upload' ? 'active' : ''}`}
+            onClick={() => setActiveTab('upload')}
+          >
+            PDF Upload & Outlines
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'chat' ? 'active' : ''}`}
+            onClick={() => setActiveTab('chat')}
+          >
+            Chatbot
+          </button>
+        </div>
+
+        {activeTab === 'chat' ? (
+          <Chatbot folderName={folderName} />
+        ) : (
+          <>
+            <div className="upload-section">
           <div className="folder-input-group">
             <label htmlFor="folder-name" className="folder-label">Folder Name:</label>
             <input
@@ -339,6 +360,8 @@ function App() {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

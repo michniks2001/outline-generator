@@ -25,7 +25,39 @@
 .subtitle {
   font-size: 1.2rem;
   color: #888;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(100, 108, 255, 0.2);
+  padding-bottom: 0;
+}
+
+.tab-button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: -2px;
+}
+
+.tab-button:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tab-button.active {
+  color: #646cff;
+  border-bottom-color: #646cff;
+  font-weight: 600;
 }
 
 .upload-section {
