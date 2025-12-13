@@ -32,11 +32,18 @@ def register_routes(app, db, collection, gemini_client, gemini_model):
         return db.store_text(
             text=request.text,
             folder_name=request.folder_name,
-            filename=request.filename
+            filename=request.filename,
+            title=request.title,
+            author=request.author
         )
     
     @app.post("/ocr-pdf")
-    async def ocr_pdf(file: UploadFile = File(...), folder_name: str = Form(...)):
+    async def ocr_pdf(
+        file: UploadFile = File(...), 
+        folder_name: str = Form(...),
+        title: str = Form(None),
+        author: str = Form(None)
+    ):
         """
         Process a scanned PDF using OCR (pytesseract) with parallel processing and store the extracted text.
         """
@@ -50,7 +57,9 @@ def register_routes(app, db, collection, gemini_client, gemini_model):
             result = await db.ocr_pdf(
                 pdf_bytes=pdf_bytes,
                 folder_name=folder_name.strip(),
-                filename=filename
+                filename=filename,
+                title=title.strip() if title else None,
+                author=author.strip() if author else None
             )
             
             return result

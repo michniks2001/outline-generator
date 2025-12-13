@@ -143,7 +143,11 @@ INSTRUCTIONS:
 5. Be concise but thorough
 6. If the question cannot be answered from the sources, say so clearly
 7. Include specific details, quotes, or examples from the sources when relevant
-
+8. If you're repeating information already stated, acknowledge this:
+    - "The sources don't mention additional methods beyond what was already discussed."
+    - "There's no additional information in the sources about this topic."
+    - "The sources don't provide any new insights on this topic."
+9. Don't rephrase the same answer to appear different.
 Generate your response:"""
 
         # Send metadata first
@@ -364,6 +368,11 @@ INSTRUCTIONS:
 5. Be concise but thorough
 6. If the question cannot be answered from the sources, say so clearly
 7. Include specific details, quotes, or examples from the sources when relevant
+8. If you're repeating information already stated, acknowledge this:
+    - "The sources don't mention additional methods beyond what was already discussed."
+    - "There's no additional information in the sources about this topic."
+    - "The sources don't provide any new insights on this topic."
+9. Don't rephrase the same answer to appear different.
 
 Generate your response:"""
 

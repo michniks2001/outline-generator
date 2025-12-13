@@ -13,6 +13,8 @@ function App() {
   const [processingMessage, setProcessingMessage] = useState('')
   const [fileName, setFileName] = useState('')
   const [folderName, setFolderName] = useState('')
+  const [documentTitle, setDocumentTitle] = useState('')
+  const [documentAuthor, setDocumentAuthor] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [questions, setQuestions] = useState([''])
@@ -65,6 +67,12 @@ function App() {
           const formData = new FormData()
           formData.append('file', file)
           formData.append('folder_name', folderName.trim())
+          if (documentTitle.trim()) {
+            formData.append('title', documentTitle.trim())
+          }
+          if (documentAuthor.trim()) {
+            formData.append('author', documentAuthor.trim())
+          }
           
           const response = await fetch('http://localhost:8000/ocr-pdf', {
             method: 'POST',
@@ -100,7 +108,9 @@ function App() {
             body: JSON.stringify({ 
               text: fullText,
               filename: file.name,
-              folder_name: folderName.trim()
+              folder_name: folderName.trim(),
+              title: documentTitle.trim() || null,
+              author: documentAuthor.trim() || null
             })
           })
           
@@ -237,6 +247,42 @@ function App() {
               className="folder-input"
               disabled={isLoading}
             />
+          </div>
+
+          <div className="document-metadata-group">
+            <div className="metadata-header">
+              <h3 className="metadata-section-title">Document Information</h3>
+              <p className="metadata-help-text">Please provide the document title and author to avoid automatic parsing from the document.</p>
+            </div>
+            <div className="metadata-input-group">
+              <label htmlFor="document-title" className="metadata-label">
+                Document Title <span className="recommended-badge">Recommended</span>
+              </label>
+              <input
+                id="document-title"
+                type="text"
+                value={documentTitle}
+                onChange={(e) => setDocumentTitle(e.target.value)}
+                placeholder="Enter document title"
+                className="metadata-input"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="metadata-input-group">
+              <label htmlFor="document-author" className="metadata-label">
+                Author <span className="recommended-badge">Recommended</span>
+              </label>
+              <input
+                id="document-author"
+                type="text"
+                value={documentAuthor}
+                onChange={(e) => setDocumentAuthor(e.target.value)}
+                placeholder="Enter author name"
+                className="metadata-input"
+                disabled={isLoading}
+              />
+            </div>
           </div>
           
           <label htmlFor="pdf-upload" className="upload-button">

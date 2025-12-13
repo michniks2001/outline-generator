@@ -13,6 +13,7 @@ function Chatbot({ folderName }) {
   const [selectedSource, setSelectedSource] = useState(null)
   const [selectedChunks, setSelectedChunks] = useState(null)
   const [selectedAuthor, setSelectedAuthor] = useState(null)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const messagesEndRef = useRef(null)
   const lastFolderNameRef = useRef(folderName)
 
@@ -257,18 +258,30 @@ function Chatbot({ folderName }) {
 
   return (
     <div className="chatbot-container">
-      <div className="chatbot-sidebar">
-        <div className="sidebar-header">
-          <h3>Chat Sessions</h3>
-          <button className="new-chat-button" onClick={createNewSession}>
-            + New Chat
-          </button>
-        </div>
-        <div className="sessions-list">
-          {sessions.length === 0 ? (
-            <p className="no-sessions">No chat sessions yet</p>
-          ) : (
-            sessions.map(session => (
+      <div className={`chatbot-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        {!isSidebarCollapsed && (
+          <div className="sidebar-header">
+            <div className="sidebar-header-top">
+              <h3>Chat Sessions</h3>
+              <button 
+                className="toggle-sidebar-button"
+                onClick={() => setIsSidebarCollapsed(true)}
+                title="Hide sessions"
+              >
+                ✕
+              </button>
+            </div>
+            <button className="new-chat-button" onClick={createNewSession}>
+              + New Chat
+            </button>
+          </div>
+        )}
+        {!isSidebarCollapsed && (
+          <div className="sessions-list">
+            {sessions.length === 0 ? (
+              <p className="no-sessions">No chat sessions yet</p>
+            ) : (
+              sessions.map(session => (
               <div
                 key={session.id}
                 className={`session-item ${session.id === currentSessionId ? 'active' : ''}`}
@@ -290,12 +303,22 @@ function Chatbot({ folderName }) {
                   ×
                 </button>
               </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       <div className="chatbot-main">
+        {isSidebarCollapsed && (
+          <button 
+            className="toggle-sidebar-button floating-toggle"
+            onClick={() => setIsSidebarCollapsed(false)}
+            title="Show sessions"
+          >
+            ☰
+          </button>
+        )}
         {!currentSessionId ? (
           <div className="chatbot-welcome">
             <h2>Start a Conversation</h2>

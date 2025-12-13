@@ -9,6 +9,8 @@ class TextRequest(BaseModel):
     text: str
     folder_name: str
     filename: str
+    title: str = None  # Optional: user-provided title
+    author: str = None  # Optional: user-provided author
 
 
 class QuestionsRequest(BaseModel):

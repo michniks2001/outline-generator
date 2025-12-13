@@ -23,7 +23,7 @@ class Database:
         self.gemini_client = gemini_client
         self.gemini_model = gemini_model
     
-    def store_text(self, text: str, folder_name: str, filename: str) -> dict:
+    def store_text(self, text: str, folder_name: str, filename: str, title: str = None, author: str = None) -> dict:
         """
         Store extracted text in the database.
         
@@ -31,6 +31,8 @@ class Database:
             text: The text to store
             folder_name: Folder name for organization
             filename: Original filename
+            title: Optional user-provided document title
+            author: Optional user-provided document author
         
         Returns:
             Dictionary with storage results
@@ -42,14 +44,39 @@ class Database:
             return {"error": "filename is required"}
         
         timestamp = datetime.now().isoformat()
-        doc_metadata = extract_title_and_author(
-            text, 
-            filename, 
-            self.gemini_client, 
-            self.gemini_model
-        )
-        document_title = doc_metadata["title"]
-        document_author = doc_metadata["author"]
+        
+        # Use user-provided title/author if available, otherwise extract from text
+        if title and title.strip():
+            document_title = title.strip()
+        else:
+            doc_metadata = extract_title_and_author(
+                text, 
+                filename, 
+                self.gemini_client, 
+                self.gemini_model
+            )
+            document_title = doc_metadata["title"]
+        
+        if author and author.strip():
+            document_author = author.strip()
+        else:
+            if not title or not title.strip():
+                # Only extract if we didn't already extract title
+                doc_metadata = extract_title_and_author(
+                    text, 
+                    filename, 
+                    self.gemini_client, 
+                    self.gemini_model
+                )
+            else:
+                # Extract only author if title was provided
+                doc_metadata = extract_title_and_author(
+                    text, 
+                    filename, 
+                    self.gemini_client, 
+                    self.gemini_model
+                )
+            document_author = doc_metadata["author"]
         chunks = chunk_text(text)
         chunk_ids = [str(uuid.uuid4()) for _ in chunks]
         
@@ -80,7 +107,7 @@ class Database:
             "chunk_ids": chunk_ids
         }
     
-    async def ocr_pdf(self, pdf_bytes: bytes, folder_name: str, filename: str) -> dict:
+    async def ocr_pdf(self, pdf_bytes: bytes, folder_name: str, filename: str, title: str = None, author: str = None) -> dict:
         """
         Process a scanned PDF using OCR and store the extracted text.
         
@@ -88,6 +115,8 @@ class Database:
             pdf_bytes: PDF file bytes
             folder_name: Folder name for organization
             filename: Original filename
+            title: Optional user-provided document title
+            author: Optional user-provided document author
         
         Returns:
             Dictionary with processing results
@@ -135,14 +164,40 @@ class Database:
             })
         
         combined_text = "\n\n".join(all_text_parts)
-        doc_metadata = extract_title_and_author(
-            combined_text, 
-            filename, 
-            self.gemini_client, 
-            self.gemini_model
-        )
-        document_title = doc_metadata["title"]
-        document_author = doc_metadata["author"]
+        
+        # Use user-provided title/author if available, otherwise extract from text
+        if title and title.strip():
+            document_title = title.strip()
+        else:
+            doc_metadata = extract_title_and_author(
+                combined_text, 
+                filename, 
+                self.gemini_client, 
+                self.gemini_model
+            )
+            document_title = doc_metadata["title"]
+        
+        if author and author.strip():
+            document_author = author.strip()
+        else:
+            # Extract author if not provided
+            if not title or not title.strip():
+                # Extract both if title wasn't provided
+                doc_metadata = extract_title_and_author(
+                    combined_text, 
+                    filename, 
+                    self.gemini_client, 
+                    self.gemini_model
+                )
+            else:
+                # Extract only author if title was provided
+                doc_metadata = extract_title_and_author(
+                    combined_text, 
+                    filename, 
+                    self.gemini_client, 
+                    self.gemini_model
+                )
+            document_author = doc_metadata["author"]
         
         timestamp = datetime.now().isoformat()
         metadatas = [
